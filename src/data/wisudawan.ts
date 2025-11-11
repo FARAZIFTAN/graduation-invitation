@@ -7,6 +7,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Log',
     prodi: 'Logistik',
     inisial: 'AYD',
+    accessCode: 'AYD2025',
   },
   {
     id: 2,
@@ -14,6 +15,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tra',
     prodi: 'Administrasi',
     inisial: 'DSS',
+    accessCode: 'DSS2025',
   },
   {
     id: 3,
@@ -21,6 +23,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tr.Log',
     prodi: 'Logistik',
     inisial: 'EDY',
+    accessCode: 'EDY2025',
   },
   {
     id: 4,
@@ -28,6 +31,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.M',
     prodi: 'Manajemen',
     inisial: 'FJD',
+    accessCode: 'FJD2025',
   },
   {
     id: 5,
@@ -35,6 +39,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tra',
     prodi: 'Administrasi',
     inisial: 'GVN',
+    accessCode: 'GVN2025',
   },
   {
     id: 6,
@@ -42,6 +47,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tra',
     prodi: 'Administrasi',
     inisial: 'MCR',
+    accessCode: 'MCR2025',
   },
   {
     id: 7,
@@ -49,6 +55,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tra',
     prodi: 'Administrasi',
     inisial: 'MRS',
+    accessCode: 'MRS2025',
   },
   {
     id: 8,
@@ -56,6 +63,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Log',
     prodi: 'Logistik',
     inisial: 'MSN',
+    accessCode: 'MSN2025',
   },
   {
     id: 9,
@@ -63,6 +71,7 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tr.Ak',
     prodi: 'Akuntansi',
     inisial: 'OM',
+    accessCode: 'OM2025',
   },
   {
     id: 10,
@@ -70,5 +79,14 @@ export const wisudawanData: Wisudawan[] = [
     gelar: 'S.Tr.Log',
     prodi: 'Logistik',
     inisial: 'TAS',
+    accessCode: 'TAS2025',
   },
 ];
+
+// Helper function to validate access code
+export function validateAccessCode(code: string): number | null {
+  const wisudawan = wisudawanData.find(
+    (w) => w.accessCode?.toUpperCase() === code.toUpperCase()
+  );
+  return wisudawan ? wisudawan.id : null;
+}

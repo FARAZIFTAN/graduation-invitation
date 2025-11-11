@@ -4,6 +4,7 @@ export interface Wisudawan {
   gelar: string;
   prodi: string;
   inisial: string;
+  accessCode?: string;
 }
 
 export interface Invitation {
