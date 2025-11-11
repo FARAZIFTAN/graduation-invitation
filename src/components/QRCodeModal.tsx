@@ -45,7 +45,17 @@ export default function QRCodeModal({ link, guestName, onClose }: QRCodeModalPro
         </button>
 
         <h2 className="text-2xl font-bold text-center mb-2">QR Code Undangan</h2>
-        <p className="text-center text-gray-600 mb-6">{guestName}</p>
+        <p className="text-center text-gray-600 mb-4">{guestName}</p>
+
+        {/* Warning Banner */}
+        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-3 mb-4">
+          <p className="text-xs text-red-800 leading-relaxed flex items-start gap-2">
+            <span className="text-red-600 text-lg flex-shrink-0 font-bold">⚠️</span>
+            <span>
+              <strong className="text-red-700">Screenshot atau download sekarang!</strong> QR Code ini tidak bisa dibuka lagi setelah Anda menutup halaman ini.
+            </span>
+          </p>
+        </div>
 
         <div className="flex justify-center mb-6">
           <div ref={qrRef} className="border-4 border-yellow-400 rounded-lg p-4"></div>

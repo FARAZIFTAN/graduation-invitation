@@ -408,29 +408,26 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <p className="text-green-300 font-extrabold text-sm tracking-wide drop-shadow-lg">
-                  Link Berhasil Dibuat! ✨
+                  Undangan Berhasil Dibuat! ✨
                 </p>
               </div>
-              <div className="relative group mb-3">
-                <p className="text-xs text-gray-200 break-all bg-ffb-black/30 backdrop-blur-sm p-3 rounded-lg border border-ffb-gold/20 font-mono font-semibold">
-                  {generatedLink}
+              {/* Warning QR One-Time Access */}
+              <div className="bg-red-500/10 backdrop-blur-sm border-2 border-red-400/40 rounded-lg p-3 mb-3 relative z-10">
+                <p className="text-xs text-gray-200 leading-relaxed flex items-start gap-2">
+                  <span className="text-red-400 text-lg flex-shrink-0">⚠️</span>
+                  <span>
+                    <strong className="text-red-400">PENTING:</strong> QR Code hanya bisa diakses <strong className="text-red-300">SEKALI</strong>! Pastikan Anda <strong className="text-red-300">screenshot atau download</strong> QR code sebelum menutup. Jika terlewat, Anda harus membuat undangan baru.
+                  </span>
                 </p>
               </div>
+              
               <button
                 onClick={() => handleShowQR(generatedLink, invitations[invitations.length - 1]?.guestName || 'Tamu')}
-                className="w-full bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold text-ffb-black py-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-gold-xl transition-all font-extrabold text-sm shadow-gold-lg tracking-wide mb-3"
+                className="w-full bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold text-ffb-black py-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-gold-xl transition-all font-extrabold text-sm shadow-gold-lg tracking-wide"
               >
                 <QrCode className="w-5 h-5" />
                 <span>Lihat QR Code</span>
               </button>
-              <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-400/30 rounded-lg p-3 relative z-10">
-                <p className="text-xs text-gray-200 leading-relaxed flex items-start gap-2">
-                  <span className="text-blue-300 text-sm flex-shrink-0">💡</span>
-                  <span>
-                    <strong className="text-blue-300">Langkah selanjutnya:</strong> Screenshot QR code ini, lalu kirim ke tamu Anda via WhatsApp atau media sosial lainnya.
-                  </span>
-                </p>
-              </div>
             </div>
           )}
         </div>
@@ -498,29 +495,19 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
                           })}
                         </td>
                         <td className="px-3 lg:px-4 py-3">
-                          <div className="flex gap-1.5 lg:gap-2">
-                            <button
-                              onClick={() => handleShowQR(inv.link, inv.guestName)}
-                              className="p-2 text-ffb-black hover:bg-ffb-gray-100 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-ffb-gray-400 glossy group min-w-[44px] min-h-[44px]"
-                              title="QR Code"
-                              aria-label={`Generate QR code untuk ${inv.guestName}`}
-                            >
-                              <QrCode className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:rotate-6 transition-transform" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(inv.id)}
-                              disabled={deletingId === inv.id}
-                              className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 glossy group min-w-[44px] min-h-[44px]"
-                              title="Hapus"
-                              aria-label={`Hapus undangan untuk ${inv.guestName}`}
-                            >
-                              {deletingId === inv.id ? (
-                                <Loader2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" />
-                              )}
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => handleDelete(inv.id)}
+                            disabled={deletingId === inv.id}
+                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 glossy group min-w-[44px] min-h-[44px]"
+                            title="Hapus"
+                            aria-label={`Hapus undangan untuk ${inv.guestName}`}
+                          >
+                            {deletingId === inv.id ? (
+                              <Loader2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 group-hover:scale-110 transition-transform" />
+                            )}
+                          </button>
                         </td>
                       </tr>
                     ))}
@@ -574,20 +561,11 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
                     </div>
 
                     {/* Actions - Touch Friendly (min 44x44px) */}
-                    <div className="grid grid-cols-2 gap-2 relative z-10">
-                      <button
-                        onClick={() => handleShowQR(inv.link, inv.guestName)}
-                        className="flex items-center justify-center gap-2 py-3 px-3 bg-gradient-to-r from-ffb-black to-ffb-gray-800 text-white rounded-lg hover:shadow-black transition-all min-h-[44px] font-semibold text-sm focus:outline-none focus:ring-2 focus:ring-ffb-gray-400 glossy group"
-                        aria-label={`Generate QR code untuk ${inv.guestName}`}
-                      >
-                        <QrCode className="w-4 h-4 group-hover:rotate-6 transition-transform" />
-                        <span>QR Code</span>
-                      </button>
-
+                    <div className="relative z-10">
                       <button
                         onClick={() => handleDelete(inv.id)}
                         disabled={deletingId === inv.id}
-                        className="flex items-center justify-center gap-2 py-3 px-3 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:shadow-red-500/50 transition-all min-h-[44px] font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 glossy group"
+                        className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg hover:shadow-lg hover:shadow-red-500/50 transition-all min-h-[44px] font-semibold text-sm disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 glossy group"
                         aria-label={`Hapus undangan untuk ${inv.guestName}`}
                       >
                         {deletingId === inv.id ? (
