@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, User, QrCode, Trash2, CheckCircle, AlertCircle, Calendar, Info, Loader2 } from 'lucide-react';
+import { ArrowLeft, User, Copy, Trash2, CheckCircle, AlertCircle, Calendar, Info, Loader2 } from 'lucide-react';
 import { wisudawanData } from '../data/wisudawan';
 import { Wisudawan, Invitation } from '../types';
 import { getQuotas, getInvitations, saveInvitation, deleteInvitation, initializeData } from '../utils/storage';
 import { generateInvitationLink, showToast } from '../utils/helpers';
-import QRCodeModal from './QRCodeModal';
 import LoadingButton from './LoadingButton';
 import EmptyState from './EmptyState';
 
@@ -21,9 +20,6 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
   const [generatedLink, setGeneratedLink] = useState('');
   const [quotas, setQuotas] = useState<Record<string, { used: number; max: number }>>({});
   const [invitations, setInvitations] = useState<Invitation[]>([]);
-  const [showQRModal, setShowQRModal] = useState(false);
-  const [qrLink, setQrLink] = useState('');
-  const [qrGuestName, setQrGuestName] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -60,7 +56,7 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
 
       // Escape to clear focus or go back
       if (e.key === 'Escape') {
-        if (selectedWisudawan && !showQRModal) {
+        if (selectedWisudawan) {
           setSelectedWisudawan(null);
           setGeneratedLink('');
           setGuestName('');
@@ -73,7 +69,7 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedWisudawan, showQRModal]);
+  }, [selectedWisudawan]);
 
   const loadQuotas = () => {
     setQuotas(getQuotas());
@@ -201,12 +197,6 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
     } finally {
       setDeletingId(null);
     }
-  };
-
-  const handleShowQR = (link: string, name: string) => {
-    setQrLink(link);
-    setQrGuestName(name);
-    setShowQRModal(true);
   };
 
   // Loading state while auto-selecting wisudawan
@@ -408,26 +398,39 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <p className="text-green-300 font-extrabold text-sm tracking-wide drop-shadow-lg">
-                  Undangan Berhasil Dibuat! ✨
-                </p>
-              </div>
-              {/* Warning QR One-Time Access */}
-              <div className="bg-red-500/10 backdrop-blur-sm border-2 border-red-400/40 rounded-lg p-3 mb-3 relative z-10">
-                <p className="text-xs text-gray-200 leading-relaxed flex items-start gap-2">
-                  <span className="text-red-400 text-lg flex-shrink-0">⚠️</span>
-                  <span>
-                    <strong className="text-red-400">PENTING:</strong> QR Code hanya bisa diakses <strong className="text-red-300">SEKALI</strong>! Pastikan Anda <strong className="text-red-300">screenshot atau download</strong> QR code sebelum menutup. Jika terlewat, Anda harus membuat undangan baru.
-                  </span>
+                  Link Undangan Berhasil Dibuat! ✨
                 </p>
               </div>
               
+              {/* Link Display */}
+              <div className="bg-white/5 backdrop-blur-sm border border-ffb-gold/30 rounded-lg p-3 mb-3 relative z-10">
+                <p className="text-xs text-gray-400 font-medium mb-2">Link Undangan:</p>
+                <p className="text-xs text-gray-200 break-all bg-ffb-black/30 backdrop-blur-sm p-3 rounded-lg border border-ffb-gold/20 font-mono font-semibold">
+                  {generatedLink}
+                </p>
+              </div>
+
+              {/* Copy Button */}
               <button
-                onClick={() => handleShowQR(generatedLink, invitations[invitations.length - 1]?.guestName || 'Tamu')}
-                className="w-full bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold text-ffb-black py-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-gold-xl transition-all font-extrabold text-sm shadow-gold-lg tracking-wide"
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedLink);
+                  alert('Link berhasil disalin! Kirim ke tamu Anda.');
+                }}
+                className="w-full bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold text-ffb-black py-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-gold-xl transition-all font-extrabold text-sm shadow-gold-lg tracking-wide mb-3"
               >
-                <QrCode className="w-5 h-5" />
-                <span>Lihat QR Code</span>
+                <Copy className="w-5 h-5" />
+                <span>Salin Link</span>
               </button>
+
+              {/* Info Box */}
+              <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-400/30 rounded-lg p-3 relative z-10">
+                <p className="text-xs text-gray-200 leading-relaxed flex items-start gap-2">
+                  <span className="text-blue-300 text-sm flex-shrink-0">💡</span>
+                  <span>
+                    <strong className="text-blue-300">Cara kirim:</strong> Salin link di atas, lalu kirim ke tamu via WhatsApp atau media sosial. Tamu tinggal klik link untuk melihat undangan.
+                  </span>
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -583,14 +586,6 @@ export default function GeneratorPage({ loggedInWisudawanId, onLogout }: Generat
           )}
         </div>
       </div>
-
-      {showQRModal && (
-        <QRCodeModal
-          link={qrLink}
-          guestName={qrGuestName}
-          onClose={() => setShowQRModal(false)}
-        />
-      )}
     </div>
   );
 }

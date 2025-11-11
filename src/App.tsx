@@ -20,7 +20,7 @@ function App() {
     const inviteMatch = path.match(/^\/i\/(\d+)\/([^/]+)$/);
     if (inviteMatch) {
       const wisudawanId = inviteMatch[1];
-      const tamu = decodeURIComponent(inviteMatch[2]);
+      const tamu = inviteMatch[2].replace(/-/g, ' '); // Convert dash back to space
       
       setWisudawanName(wisudawanId); // Pass ID instead of name
       setGuestName(tamu);

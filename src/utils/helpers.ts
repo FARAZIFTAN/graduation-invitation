@@ -57,8 +57,9 @@ export function generateInvitationLink(
   }
 
   const baseUrl = window.location.origin;
-  // New short format: /i/:id/:name
-  const link = `${baseUrl}/i/${wisudawanId}/${encodeURIComponent(tamu.trim())}`;
+  // New short format: /i/:id/:name (with dash instead of space)
+  const cleanName = tamu.trim().replace(/\s+/g, '-');
+  const link = `${baseUrl}/i/${wisudawanId}/${cleanName}`;
 
   return link;
 }
