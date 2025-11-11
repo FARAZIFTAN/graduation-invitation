@@ -4,6 +4,7 @@ import LoginPage from './components/LoginPage';
 import GeneratorPage from './components/GeneratorPage';
 import InvitePage from './components/InvitePage';
 import { showToast } from './utils/helpers';
+import { authAPI, getToken } from '@/services/api';
 
 type Page = 'landing' | 'login' | 'generator' | 'invite';
 
@@ -11,7 +12,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState<Page>('landing');
   const [guestName, setGuestName] = useState('');
   const [wisudawanName, setWisudawanName] = useState('');
-  const [loggedInWisudawanId, setLoggedInWisudawanId] = useState<number | null>(null);
+  const [loggedInWisudawan, setLoggedInWisudawan] = useState<any>(null);
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -40,22 +41,32 @@ function App() {
       return;
     }
 
-    // Check if user has active session
-    const sessionData = localStorage.getItem('wisuda_session');
-    if (sessionData) {
-      try {
-        const session = JSON.parse(sessionData);
-        setLoggedInWisudawanId(session.wisudawanId);
-      } catch (error) {
-        localStorage.removeItem('wisuda_session');
-      }
-    }
+    // Check if user has active session with backend verification
+    checkSession();
   }, []);
+
+  const checkSession = async () => {
+    const token = getToken();
+    const sessionData = localStorage.getItem('wisuda_session');
+    
+    if (!token || !sessionData) return;
+    
+    try {
+      // Verify session with backend
+      const session = await authAPI.verifySession();
+      setLoggedInWisudawan(session);
+      setCurrentPage('generator');
+    } catch (error) {
+      // Token expired or invalid, clear session
+      authAPI.logout();
+      localStorage.removeItem('wisuda_session');
+    }
+  };
 
   const handleNavigate = (page: 'generator' | 'info') => {
     if (page === 'generator') {
       // Check if user is logged in
-      if (loggedInWisudawanId) {
+      if (loggedInWisudawan) {
         setCurrentPage('generator');
       } else {
         setCurrentPage('login');
@@ -68,22 +79,26 @@ function App() {
     }
   };
 
-  const handleLogin = (wisudawanId: number) => {
-    setLoggedInWisudawanId(wisudawanId);
+  const handleLogin = (session: any) => {
+    setLoggedInWisudawan(session);
     setCurrentPage('generator');
     showToast('Login berhasil! Selamat datang 🎓', 'success');
   };
 
   const handleBackToLanding = () => {
+    // Just go back to landing, keep session for refresh
     setCurrentPage('landing');
     window.history.pushState({}, '', '/');
   };
 
   const handleLogout = () => {
+    // Clear session and token
+    authAPI.logout();
     localStorage.removeItem('wisuda_session');
-    setLoggedInWisudawanId(null);
+    setLoggedInWisudawan(null);
     setCurrentPage('landing');
-    showToast('Anda telah keluar', 'success');
+    window.history.pushState({}, '', '/');
+    showToast('Anda telah logout', 'success');
   };
 
   const handleInvalidLink = () => {
@@ -100,7 +115,7 @@ function App() {
       {currentPage === 'generator' && (
         <GeneratorPage 
           onBack={handleBackToLanding} 
-          loggedInWisudawanId={loggedInWisudawanId}
+          loggedInWisudawan={loggedInWisudawan}
           onLogout={handleLogout}
         />
       )}

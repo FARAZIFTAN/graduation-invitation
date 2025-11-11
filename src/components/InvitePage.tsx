@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Clock, MapPin, Shirt, CheckCircle, Download, Navigation, AlertCircle } from 'lucide-react';
-import { wisudawanData } from '../data/wisudawan';
-import { Wisudawan } from '../types';
+import { invitationsAPI } from '@/services/api';
 import { downloadCalendar, getCountdown } from '../utils/helpers';
 import LoadingSpinner from './LoadingSpinner';
 import LoadingButton from './LoadingButton';
@@ -13,48 +12,59 @@ interface InvitePageProps {
 }
 
 export default function InvitePage({ guestName, wisudawanName, onInvalidLink }: InvitePageProps) {
-  const [wisudawan, setWisudawan] = useState<Wisudawan | null>(null);
+  const [wisudawan, setWisudawan] = useState<any>(null);
   const [countdown, setCountdown] = useState(getCountdown());
   const [isLoading, setIsLoading] = useState(true);
   const [isConfirming, setIsConfirming] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isInvalid, setIsInvalid] = useState(false);
 
   useEffect(() => {
-    if (!guestName || !wisudawanName) {
-      onInvalidLink();
-      return;
-    }
-
-    // Simulate loading for better UX
-    const loadTimer = setTimeout(() => {
-      // Check if wisudawanName is an ID (new format) or name (old format)
-      const found = /^\d+$/.test(wisudawanName)
-        ? wisudawanData.find((w) => w.id === parseInt(wisudawanName))
-        : wisudawanData.find((w) => w.nama === wisudawanName);
-      
-      if (!found) {
-        onInvalidLink();
-        return;
-      }
-      setWisudawan(found);
-      setIsLoading(false);
-    }, 800);
+    validateInvitation();
 
     const countdownTimer = setInterval(() => {
       setCountdown(getCountdown());
     }, 1000);
 
     return () => {
-      clearTimeout(loadTimer);
       clearInterval(countdownTimer);
     };
-  }, [guestName, wisudawanName, onInvalidLink]);
+  }, [guestName, wisudawanName]);
+
+  const validateInvitation = async () => {
+    if (!guestName || !wisudawanName) {
+      setIsInvalid(true);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      // Convert guest name back to slug format (with dashes)
+      const tamuSlug = guestName.trim().replace(/\s+/g, '-');
+      
+      // Validate with backend API
+      const data = await invitationsAPI.validate(wisudawanName, tamuSlug);
+      
+      if (data.valid && data.wisudawan) {
+        setWisudawan(data.wisudawan);
+        setIsInvalid(false);
+      } else {
+        setIsInvalid(true);
+      }
+    } catch (error) {
+      console.error('Validation error:', error);
+      setIsInvalid(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   if (isLoading) {
     return <LoadingSpinner fullScreen text="Memuat undangan..." />;
   }
 
-  if (!wisudawan) {
+  if (isInvalid || !wisudawan) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ffb-black via-ffb-gray-900 to-ffb-black flex items-center justify-center p-4">
         <div className="luxury-card bg-white rounded-2xl p-6 md:p-8 max-w-md w-full text-center animate-fade-in shadow-gold-xl border-2 border-red-500">
@@ -67,7 +77,7 @@ export default function InvitePage({ guestName, wisudawanName, onInvalidLink }: 
           </h2>
 
           <p className="text-sm md:text-base text-ffb-gray-600 mb-6 font-medium">
-            Link undangan tidak valid atau sudah kadaluarsa. Silakan hubungi wisudawan untuk
+            Link undangan tidak valid atau sudah dihapus. Silakan hubungi wisudawan untuk
             mendapatkan link undangan yang baru.
           </p>
 

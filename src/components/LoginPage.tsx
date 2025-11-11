@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Lock, ArrowRight, AlertCircle } from 'lucide-react';
-import { validateAccessCode } from '../data/wisudawan';
+import { authAPI } from '@/services/api';
 import LoadingButton from './LoadingButton';
 
 interface LoginPageProps {
-  onLogin: (wisudawanId: number) => void;
+  onLogin: (session: any) => void;
 }
 
 export default function LoginPage({ onLogin }: LoginPageProps) {
@@ -23,20 +23,19 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
     setIsLoading(true);
     setError('');
 
-    // Simulate loading for better UX
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    const wisudawanId = validateAccessCode(accessCode);
-    
-    if (wisudawanId) {
-      // Save to localStorage
+    try {
+      // Call backend API for login
+      const { session, token } = await authAPI.login(accessCode);
+      
+      // Save session to localStorage
       localStorage.setItem('wisuda_session', JSON.stringify({
-        wisudawanId,
+        ...session,
         timestamp: new Date().toISOString(),
       }));
-      onLogin(wisudawanId);
-    } else {
-      setError('Kode akses tidak valid. Periksa kembali kode Anda.');
+      
+      onLogin(session);
+    } catch (error: any) {
+      setError(error.message || 'Kode akses tidak valid. Periksa kembali kode Anda.');
       setIsLoading(false);
     }
   };
