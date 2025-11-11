@@ -225,7 +225,7 @@ export default function GeneratorPage({ onBack }: GeneratorPageProps) {
             
             <div>
               <h1 className="text-2xl md:text-3xl font-extrabold text-white mb-2 drop-shadow-lg">
-                Pilih Nama Anda
+                Buat Undangan Digital
               </h1>
               <p className="text-gray-200 text-sm md:text-base font-semibold">
                 Wisuda ULBI - 2025
@@ -235,6 +235,22 @@ export default function GeneratorPage({ onBack }: GeneratorPageProps) {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 py-8 relative z-10">
+          {/* Info Banner */}
+          <div className="mb-6 bg-blue-500/10 backdrop-blur-lg border-2 border-blue-400/30 rounded-xl p-4 relative overflow-hidden">
+            <div className="absolute inset-0 shimmer opacity-10 pointer-events-none"></div>
+            <div className="flex items-start gap-3 relative z-10">
+              <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="text-white font-extrabold text-sm mb-1">ℹ️ Info Penting</h3>
+                <p className="text-gray-200 text-xs md:text-sm leading-relaxed">
+                  Setiap wisudawan dapat membuat <span className="font-bold text-blue-300">maksimal 10 link undangan</span> untuk tamu yang berbeda. Setiap link bersifat personal dan hanya untuk 1 tamu.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Search Bar dengan Glossy Effect */}
           <div className="mb-8">
             <div className="max-w-3xl mx-auto">
@@ -590,7 +606,7 @@ export default function GeneratorPage({ onBack }: GeneratorPageProps) {
                   <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <p className="text-green-300 font-extrabold text-sm tracking-wide drop-shadow-lg">
-                  Berhasil! ✨
+                  Link Berhasil Dibuat! ✨
                 </p>
               </div>
               <div className="relative group mb-3">
@@ -600,11 +616,19 @@ export default function GeneratorPage({ onBack }: GeneratorPageProps) {
               </div>
               <button
                 onClick={() => handleShowQR(generatedLink, invitations[invitations.length - 1]?.guestName || 'Tamu')}
-                className="w-full bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold text-ffb-black py-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-gold-xl transition-all font-extrabold text-sm shadow-gold-lg tracking-wide"
+                className="w-full bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold text-ffb-black py-4 rounded-xl flex items-center justify-center gap-2 hover:shadow-gold-xl transition-all font-extrabold text-sm shadow-gold-lg tracking-wide mb-3"
               >
                 <QrCode className="w-5 h-5" />
                 <span>Lihat QR Code</span>
               </button>
+              <div className="bg-blue-500/10 backdrop-blur-sm border border-blue-400/30 rounded-lg p-3 relative z-10">
+                <p className="text-xs text-gray-200 leading-relaxed flex items-start gap-2">
+                  <span className="text-blue-300 text-sm flex-shrink-0">💡</span>
+                  <span>
+                    <strong className="text-blue-300">Langkah selanjutnya:</strong> Screenshot QR code ini, lalu kirim ke tamu Anda via WhatsApp atau media sosial lainnya.
+                  </span>
+                </p>
+              </div>
             </div>
           )}
         </div>
@@ -627,8 +651,8 @@ export default function GeneratorPage({ onBack }: GeneratorPageProps) {
             <EmptyState
               type="no-invitations"
               title="Belum Ada Undangan"
-              description="Mulai buat undangan pertama Anda dengan memasukkan nama tamu di formulir di atas. Anda dapat membuat hingga 10 undangan."
-              actionLabel="Mulai Buat Undangan"
+              description="Belum ada undangan yang dibuat. Masukkan nama tamu di formulir di atas untuk membuat undangan pertama Anda."
+              actionLabel="Isi Formulir"
               onAction={() => {
                 const input = document.getElementById('guest-name-input') as HTMLInputElement;
                 input?.focus();

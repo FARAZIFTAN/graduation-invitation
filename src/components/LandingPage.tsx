@@ -59,7 +59,7 @@ export default function LandingPage({ onNavigate }: LandingPageProps) {
               >
                 <span className="flex items-center justify-center gap-2 md:gap-3 relative z-10">
                   <span aria-hidden="true" className="text-xl md:text-2xl">🎓</span>
-                  <span>Saya Wisudawan</span>
+                  <span>Buat Undangan</span>
                 </span>
                 {/* Shine effect on hover */}
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000"></div>
