@@ -80,7 +80,20 @@ export const wisudawanAPI = {
 export const invitationsAPI = {
   getAll: async (wisudawanId: string) => {
     const response = await fetchAPI(`/invitations?wisudawanId=${wisudawanId}`);
-    return response.data;
+    const data = response.data;
+    
+    // Transform backend data to frontend format
+    const transformedInvitations = data.invitations.map((inv: any) => ({
+      id: inv._id,
+      guestName: inv.tamu,
+      link: inv.link,
+      createdAt: inv.createdAt,
+    }));
+    
+    return {
+      invitations: transformedInvitations,
+      quota: data.quota,
+    };
   },
 
   create: async (wisudawanId: string, tamu: string) => {
@@ -88,7 +101,15 @@ export const invitationsAPI = {
       method: 'POST',
       body: JSON.stringify({ wisudawanId, tamu }),
     });
-    return response.data;
+    const inv = response.data;
+    
+    // Transform backend data to frontend format
+    return {
+      id: inv._id,
+      guestName: inv.tamu,
+      link: inv.link,
+      createdAt: inv.createdAt,
+    };
   },
 
   delete: async (id: string) => {

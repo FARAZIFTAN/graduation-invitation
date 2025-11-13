@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Calendar, Clock, MapPin, Shirt, CheckCircle, Download, Navigation, AlertCircle } from 'lucide-react';
+import { Calendar, Clock, MapPin, Shirt, Navigation, AlertCircle } from 'lucide-react';
 import { invitationsAPI } from '@/services/api';
-import { downloadCalendar, getCountdown } from '../utils/helpers';
 import LoadingSpinner from './LoadingSpinner';
-import LoadingButton from './LoadingButton';
 
 interface InvitePageProps {
   guestName: string;
@@ -11,24 +9,13 @@ interface InvitePageProps {
   onInvalidLink: () => void;
 }
 
-export default function InvitePage({ guestName, wisudawanName, onInvalidLink }: InvitePageProps) {
+export default function InvitePage({ guestName, wisudawanName }: InvitePageProps) {
   const [wisudawan, setWisudawan] = useState<any>(null);
-  const [countdown, setCountdown] = useState(getCountdown());
   const [isLoading, setIsLoading] = useState(true);
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isDownloading, setIsDownloading] = useState(false);
   const [isInvalid, setIsInvalid] = useState(false);
 
   useEffect(() => {
     validateInvitation();
-
-    const countdownTimer = setInterval(() => {
-      setCountdown(getCountdown());
-    }, 1000);
-
-    return () => {
-      clearInterval(countdownTimer);
-    };
   }, [guestName, wisudawanName]);
 
   const validateInvitation = async () => {
@@ -40,11 +27,7 @@ export default function InvitePage({ guestName, wisudawanName, onInvalidLink }: 
 
     try {
       setIsLoading(true);
-      // Convert guest name back to slug format (with dashes)
-      const tamuSlug = guestName.trim().replace(/\s+/g, '-');
-      
-      // Validate with backend API
-      const data = await invitationsAPI.validate(wisudawanName, tamuSlug);
+      const data = await invitationsAPI.validate(wisudawanName, guestName);
       
       if (data.valid && data.wisudawan) {
         setWisudawan(data.wisudawan);
@@ -60,30 +43,32 @@ export default function InvitePage({ guestName, wisudawanName, onInvalidLink }: 
     }
   };
 
+  const handleViewLocation = () => {
+    window.open('https://maps.google.com/?q=Universitas+Logistik+dan+Bisnis+Internasional+ULBI+Bandung', '_blank');
+  };
+
   if (isLoading) {
     return <LoadingSpinner fullScreen text="Memuat undangan..." />;
   }
 
   if (isInvalid || !wisudawan) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-ffb-black via-ffb-gray-900 to-ffb-black flex items-center justify-center p-4">
-        <div className="luxury-card bg-white rounded-2xl p-6 md:p-8 max-w-md w-full text-center animate-fade-in shadow-gold-xl border-2 border-red-500">
-          <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4 md:mb-6 border-4 border-red-200">
-            <AlertCircle className="w-8 h-8 md:w-10 md:h-10 text-red-600" />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center shadow-2xl">
+          <div className="w-20 h-20 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-6">
+            <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
-
-          <h2 className="text-xl md:text-2xl font-bold text-ffb-black mb-3">
-            Undangan Tidak Ditemukan
+          <h2 className="text-2xl font-bold text-gray-900 mb-3">
+            Undangan Tidak Valid
           </h2>
-
-          <p className="text-sm md:text-base text-ffb-gray-600 mb-6 font-medium">
-            Link undangan tidak valid atau sudah dihapus. Silakan hubungi wisudawan untuk
-            mendapatkan link undangan yang baru.
+          <p className="text-gray-600 mb-6">
+            Link undangan tidak ditemukan atau sudah dihapus oleh wisudawan. 
+            <br /><br />
+            <strong>Silakan hubungi wisudawan</strong> untuk mendapatkan link undangan yang baru.
           </p>
-
           <button
             onClick={() => (window.location.href = '/')}
-            className="w-full px-6 py-3.5 bg-gradient-to-r from-ffb-gold to-ffb-gold-light text-white rounded-xl font-bold hover:shadow-gold-lg transition-all focus:outline-none focus:ring-4 focus:ring-ffb-gold/50 gold-shine min-h-[52px] text-sm md:text-base"
+            className="w-full px-6 py-3.5 bg-gradient-to-r from-amber-600 to-amber-500 text-white rounded-xl font-bold hover:shadow-lg transition-all"
           >
             Kembali ke Beranda
           </button>
@@ -92,241 +77,189 @@ export default function InvitePage({ guestName, wisudawanName, onInvalidLink }: 
     );
   }
 
-  const handleConfirmation = () => {
-    setIsConfirming(true);
-    window.open(
-      'https://docs.google.com/forms/d/e/1FAIpQLSdDummyFormId/viewform',
-      '_blank'
-    );
-    // Reset after a delay
-    setTimeout(() => setIsConfirming(false), 2000);
-  };
-
-  const handleViewLocation = () => {
-    window.open('https://maps.google.com/?q=UNP+Kediri', '_blank');
-  };
-
-  const handleDownloadCalendar = async () => {
-    setIsDownloading(true);
-    try {
-      await downloadCalendar(guestName, wisudawan.nama);
-    } finally {
-      setTimeout(() => setIsDownloading(false), 1000);
-    }
-  };
+  const guestDisplayName = guestName.replace(/-/g, ' ');
 
   return (
-    <div className="min-h-screen bg-ffb-gray-50">
-      <div className="bg-gradient-to-br from-ffb-black via-ffb-gray-900 to-ffb-black py-12 md:py-16 px-4 relative overflow-hidden">
-        {/* Decorative background */}
-        <div className="absolute inset-0 overflow-hidden opacity-20">
-          <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-            <pattern
-              id="pattern"
-              x="0"
-              y="0"
-              width="40"
-              height="40"
-              patternUnits="userSpaceOnUse"
-            >
-              <circle cx="20" cy="20" r="2" fill="#D4AF37" />
-            </pattern>
-            <rect width="100%" height="100%" fill="url(#pattern)" />
-          </svg>
-        </div>
-
-        {/* Animated circles */}
-        <div className="absolute inset-0 overflow-hidden" aria-hidden="true">
-          <div className="absolute w-72 h-72 bg-ffb-gold rounded-full opacity-10 blur-3xl -top-36 -left-36 animate-pulse-slow"></div>
-          <div className="absolute w-72 h-72 bg-ffb-brown rounded-full opacity-10 blur-3xl -bottom-36 -right-36 animate-pulse-slow"></div>
-        </div>
-
-        <div className="max-w-3xl mx-auto text-center relative z-10 animate-fade-in">
-          {/* Logo badge */}
-          <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 mb-6 bg-gradient-to-br from-ffb-gold to-ffb-gold-dark rounded-full glow-gold animate-scale-in">
-            <span className="text-2xl md:text-3xl" aria-label="Envelope">✉️</span>
-          </div>
-          
-          <div className="mb-6 md:mb-8">
-            <p className="text-ffb-gold text-base md:text-lg font-semibold mb-2">Kepada Yth.</p>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 text-gold-metallic px-4">
-              {guestName}
-            </h1>
-            <p className="text-ffb-gold-light font-medium">Di Tempat</p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-orange-50 relative overflow-hidden">
+      {/* Floral Decorations - Top Left */}
+      <div className="fixed top-0 left-0 w-64 h-64 opacity-40 pointer-events-none">
+        <svg viewBox="0 0 200 200" className="w-full h-full">
+          <circle cx="50" cy="50" r="30" fill="#fce7f3" opacity="0.6"/>
+          <circle cx="80" cy="40" r="25" fill="#fbcfe8" opacity="0.5"/>
+          <circle cx="60" cy="80" r="20" fill="#f9a8d4" opacity="0.4"/>
+          <circle cx="90" cy="75" r="22" fill="#fce7f3" opacity="0.5"/>
+        </svg>
       </div>
 
-      <div className="max-w-3xl mx-auto px-4 py-8 md:py-12">
-        <div className="luxury-card bg-white rounded-2xl shadow-gold-xl border-2 border-ffb-gold p-6 md:p-10 lg:p-12 mb-6 md:mb-8 animate-fade-in relative overflow-hidden">
-          {/* Shimmer overlay */}
-          <div className="absolute inset-0 shimmer opacity-30 pointer-events-none"></div>
+      {/* Floral Decorations - Top Right */}
+      <div className="fixed top-0 right-0 w-64 h-64 opacity-40 pointer-events-none transform scale-x-[-1]">
+        <svg viewBox="0 0 200 200" className="w-full h-full">
+          <circle cx="50" cy="50" r="30" fill="#fed7aa" opacity="0.6"/>
+          <circle cx="80" cy="40" r="25" fill="#fdba74" opacity="0.5"/>
+          <circle cx="60" cy="80" r="20" fill="#fb923c" opacity="0.4"/>
+          <circle cx="90" cy="75" r="22" fill="#fed7aa" opacity="0.5"/>
+        </svg>
+      </div>
+
+      {/* Floral Decorations - Bottom */}
+      <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-96 h-48 opacity-30 pointer-events-none">
+        <svg viewBox="0 0 400 200" className="w-full h-full">
+          <circle cx="100" cy="150" r="35" fill="#fce7f3" opacity="0.6"/>
+          <circle cx="150" cy="140" r="30" fill="#fbcfe8" opacity="0.5"/>
+          <circle cx="200" cy="145" r="32" fill="#fed7aa" opacity="0.5"/>
+          <circle cx="250" cy="140" r="30" fill="#fdba74" opacity="0.5"/>
+          <circle cx="300" cy="150" r="35" fill="#fce7f3" opacity="0.6"/>
+        </svg>
+      </div>
+
+      {/* Main Content - Optimized for Mobile */}
+      <div className="max-w-lg mx-auto px-3 py-6 relative z-10">
+        {/* Main Card */}
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl overflow-hidden border-2 border-pink-100">
           
-          <div className="relative z-10">
-            <p className="text-center text-ffb-gray-700 mb-4 md:mb-6 text-base md:text-lg font-medium">
-              Anda diundang oleh
+          {/* Header Text */}
+          <div className="text-center pt-6 pb-4 px-4">
+            <p className="text-gray-600 text-sm mb-2 font-light tracking-wide">
+              SYUKURAN WISUDA
             </p>
-
-            <div className="flex flex-col items-center mb-6 md:mb-8">
-              <div className="w-24 h-24 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-ffb-gold via-ffb-gold-shine to-ffb-gold-dark flex items-center justify-center text-white font-bold text-2xl md:text-3xl border-4 border-ffb-gold-light mb-4 glow-gold animate-scale-in shadow-gold-lg">
-                {wisudawan.inisial}
-              </div>
-              <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-center leading-snug px-4">
-                <span className="text-ffb-black">{wisudawan.nama}</span>, <span className="text-ffb-gold">{wisudawan.gelar}</span>
-              </h2>
-            </div>
-
-            <div className="text-center mb-6 md:mb-8">
-              <p className="text-ffb-gray-700 mb-2 font-medium">untuk hadir di acara:</p>
-              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-ffb-black text-gold-metallic">
-                Wisuda & Penerimaan Mahasiswa Baru 2025
-              </h3>
-            </div>
-
-            <div className="bg-gradient-to-br from-ffb-gold/10 via-white to-ffb-brown/5 rounded-xl p-5 md:p-6 space-y-3 md:space-y-4 border border-ffb-gold/30 glossy">
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-ffb-gold to-ffb-gold-dark rounded-lg flex items-center justify-center flex-shrink-0 glow-gold">
-                  <Calendar className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-bold text-ffb-black text-sm md:text-base">Sabtu, 21 Desember 2025</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-ffb-gold to-ffb-gold-dark rounded-lg flex items-center justify-center flex-shrink-0 glow-gold">
-                  <Clock className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-bold text-ffb-black text-sm md:text-base">08.00 - 12.00 WIB</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-ffb-gold to-ffb-gold-dark rounded-lg flex items-center justify-center flex-shrink-0 glow-gold">
-                  <MapPin className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-bold text-ffb-black text-sm md:text-base">Aula Utama UNP Kediri</p>
-                  <p className="text-xs md:text-sm text-ffb-gray-600">Jl. Mayor Bismo No.27, Kediri</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-3 md:gap-4">
-                <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-br from-ffb-gold to-ffb-gold-dark rounded-lg flex items-center justify-center flex-shrink-0 glow-gold">
-                  <Shirt className="w-5 h-5 md:w-6 md:h-6 text-white" />
-                </div>
-                <div>
-                  <p className="font-bold text-ffb-black text-sm md:text-base">
-                    Dress Code: Formal / Kebaya & Batik
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {!countdown.isPast && (
-          <div className="bg-gradient-to-r from-ffb-gold via-ffb-gold-shine to-ffb-gold-light rounded-2xl shadow-gold-xl p-5 md:p-6 mb-6 md:mb-8 animate-fade-in gold-shine relative overflow-hidden">
-            <div className="absolute inset-0 shimmer opacity-50 pointer-events-none"></div>
-            <p className="text-center text-ffb-black font-bold mb-3 md:mb-4 text-base md:text-lg relative z-10">
-              Acara dimulai dalam:
-            </p>
-            <div className="grid grid-cols-4 gap-2 md:gap-3 relative z-10">
-              <div className="luxury-card bg-white rounded-xl p-2.5 md:p-3 text-center glossy border border-ffb-gold/30">
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-ffb-black">
-                  {countdown.days}
-                </p>
-                <p className="text-xs md:text-sm text-ffb-gray-600 font-medium">Hari</p>
-              </div>
-              <div className="luxury-card bg-white rounded-xl p-2.5 md:p-3 text-center glossy border border-ffb-gold/30">
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-ffb-black">
-                  {countdown.hours}
-                </p>
-                <p className="text-xs md:text-sm text-ffb-gray-600 font-medium">Jam</p>
-              </div>
-              <div className="luxury-card bg-white rounded-xl p-2.5 md:p-3 text-center glossy border border-ffb-gold/30">
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-ffb-black">
-                  {countdown.minutes}
-                </p>
-                <p className="text-xs md:text-sm text-ffb-gray-600 font-medium">Menit</p>
-              </div>
-              <div className="luxury-card bg-white rounded-xl p-2.5 md:p-3 text-center glossy border border-ffb-gold/30">
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-ffb-black">
-                  {countdown.seconds}
-                </p>
-                <p className="text-xs md:text-sm text-ffb-gray-600 font-medium">Detik</p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {countdown.isPast && (
-          <div className="bg-gradient-to-br from-ffb-gray-200 to-ffb-gray-300 rounded-2xl shadow-lg p-5 md:p-6 mb-6 md:mb-8 text-center border-2 border-ffb-gray-400">
-            <p className="text-ffb-gray-700 font-bold text-base md:text-lg">
-              Acara sudah berlangsung
+            <p className="text-gray-500 text-xs font-light italic leading-relaxed px-2">
+              Dengan penuh suka cita kami mengundang<br/>
+              untuk turut, untuk hadir, dan turut serta
             </p>
           </div>
-        )}
 
-        <div className="space-y-3 mb-6 md:mb-8">
-          <LoadingButton
-            onClick={handleConfirmation}
-            isLoading={isConfirming}
-            loadingText="Membuka formulir..."
-            variant="primary"
-            className="w-full py-3.5 md:py-4 text-base md:text-lg hover:scale-105 min-h-[52px] md:min-h-[56px] gold-shine shadow-gold-lg hover:shadow-gold-xl font-bold"
-            aria-label="Konfirmasi kehadiran ke acara wisuda"
-          >
-            <CheckCircle className="w-5 h-5 md:w-6 md:h-6" />
-            Konfirmasi Kehadiran
-          </LoadingButton>
+          {/* Wisudawan Photo/Initial with Floral Frame */}
+          <div className="flex flex-col items-center px-4 pb-4">
+            <div className="relative mb-3">
+              {/* Floral decoration around photo */}
+              <div className="absolute -inset-5 opacity-60">
+                <svg viewBox="0 0 200 200" className="w-full h-full">
+                  {/* Top left flower */}
+                  <circle cx="30" cy="30" r="12" fill="#fce7f3"/>
+                  <circle cx="25" cy="25" r="8" fill="#fbcfe8"/>
+                  {/* Top right flower */}
+                  <circle cx="170" cy="30" r="12" fill="#fed7aa"/>
+                  <circle cx="175" cy="25" r="8" fill="#fdba74"/>
+                  {/* Bottom left flower */}
+                  <circle cx="30" cy="170" r="12" fill="#fed7aa"/>
+                  <circle cx="25" cy="175" r="8" fill="#fdba74"/>
+                  {/* Bottom right flower */}
+                  <circle cx="170" cy="170" r="12" fill="#fce7f3"/>
+                  <circle cx="175" cy="175" r="8" fill="#fbcfe8"/>
+                </svg>
+              </div>
+              
+              {/* Photo/Initial Circle - Mobile Optimized */}
+              <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-pink-200 via-rose-200 to-orange-200 flex items-center justify-center shadow-xl border-4 border-white">
+                <span className="text-4xl font-bold text-gray-700">
+                  {wisudawan.inisial}
+                </span>
+              </div>
+            </div>
 
-          <LoadingButton
-            onClick={handleDownloadCalendar}
-            isLoading={isDownloading}
-            loadingText="Mengunduh..."
-            variant="secondary"
-            className="w-full py-3.5 md:py-4 text-base md:text-lg hover:scale-105 min-h-[52px] md:min-h-[56px] glossy font-bold"
-            aria-label="Simpan tanggal acara ke kalender"
-          >
-            <Download className="w-5 h-5 md:w-6 md:h-6" />
-            Simpan ke Kalender
-          </LoadingButton>
+            {/* Name - Mobile Optimized */}
+            <h1 className="text-xl font-serif font-bold text-gray-800 text-center mb-1 leading-tight px-2">
+              {wisudawan.nama}
+            </h1>
+            <p className="text-base text-rose-600 font-medium text-center">
+              {wisudawan.gelar}
+            </p>
+          </div>
 
-          <LoadingButton
-            onClick={handleViewLocation}
-            variant="secondary"
-            className="w-full py-3.5 md:py-4 text-base md:text-lg hover:scale-105 min-h-[52px] md:min-h-[56px] glossy font-bold"
-            aria-label="Lihat lokasi acara di Google Maps"
-          >
-            <Navigation className="w-5 h-5 md:w-6 md:h-6" />
-            Lihat Lokasi
-          </LoadingButton>
-        </div>
+          {/* Guest Name Section */}
+          <div className="text-center py-5 px-4 border-t-2 border-b-2 border-pink-100">
+            <p className="text-gray-500 text-xs font-light mb-1">Kepada Yth.</p>
+            <h2 className="text-xl font-serif font-bold text-gray-800">
+              {guestDisplayName}
+            </h2>
+            <p className="text-gray-500 text-xs font-light mt-1">Di Tempat</p>
+          </div>
 
-        <div className="text-center text-ffb-black space-y-3 md:space-y-4 bg-gradient-to-br from-ffb-gold/10 via-white to-ffb-brown/5 p-6 md:p-8 rounded-2xl shadow-gold border-2 border-ffb-gold/30 luxury-card relative overflow-hidden">
-          <div className="absolute inset-0 shimmer opacity-20 pointer-events-none"></div>
-          <div className="relative z-10">
-            <p className="text-base md:text-lg leading-relaxed font-medium text-ffb-gray-700">
-              Merupakan suatu kehormatan bagi kami apabila
-              <br />
+          {/* Event Details in Boxes - Mobile Optimized */}
+          <div className="px-4 py-6 space-y-3">
+            {/* Date Box */}
+            <div className="text-center">
+              <div className="inline-flex items-center gap-3 bg-gradient-to-r from-pink-50 to-orange-50 px-5 py-3 rounded-2xl border border-pink-200 shadow-sm">
+                <div className="flex flex-col items-center min-w-[70px]">
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mb-0.5">Rabu</p>
+                  <p className="text-3xl font-bold text-rose-600">26</p>
+                  <p className="text-xs text-gray-500 uppercase tracking-wider mt-0.5">November</p>
+                </div>
+                <div className="w-px h-14 bg-pink-300"></div>
+                <div className="text-left">
+                  <p className="text-xl font-bold text-gray-800">2025</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Time */}
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Clock className="w-4 h-4 text-rose-500 flex-shrink-0" />
+              <p className="text-gray-700 font-medium text-sm">Pukul 08.00 - 12.00 WIB</p>
+            </div>
+
+            {/* Location */}
+            <div className="bg-gradient-to-br from-pink-50 to-orange-50 rounded-2xl p-4 border border-pink-200">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-bold text-gray-800 text-base mb-1">Universitas Logistik dan Bisnis Internasional (ULBI)</p>
+                  <p className="text-xs text-gray-600 leading-relaxed">Jl. Sariasih No.54, Sarijadi, Kec. Sukasari, Kota Bandung, Jawa Barat 40151</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Dress Code */}
+            <div className="flex items-center justify-center gap-2 py-2">
+              <Shirt className="w-4 h-4 text-rose-500 flex-shrink-0" />
+              <p className="text-gray-700 font-medium text-center text-sm">
+                Dress Code: Formal / Kebaya & Batik
+              </p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center justify-center py-3">
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-pink-300 to-transparent"></div>
+            <div className="mx-2 text-pink-400 text-sm">❀</div>
+            <div className="w-12 h-px bg-gradient-to-r from-transparent via-pink-300 to-transparent"></div>
+          </div>
+
+          {/* Footer Message - Mobile Optimized */}
+          <div className="text-center px-4 pb-6">
+            <p className="text-gray-600 text-sm leading-relaxed mb-3">
+              Merupakan suatu kehormatan bagi kami apabila<br/>
               Bapak/Ibu/Saudara/i berkenan hadir.
             </p>
-            <p className="text-lg md:text-xl font-bold text-ffb-black text-gold-metallic">
-              Kami tunggu kehadiran Anda! 🎓✨
+            <p className="text-lg font-serif font-bold text-gray-800 mb-2">
+              Kami tunggu kehadiran Anda! 🎓
             </p>
-            <p className="text-sm md:text-base text-ffb-gray-600 italic font-medium">
-              Hormat kami,
-              <br />
-              Panitia Wisuda & PMB 2025
-            </p>
+            <div className="text-xs text-gray-500 italic space-y-0.5">
+              <p>Hormat kami,</p>
+              <p className="font-semibold text-rose-600">Panitia Wisuda & PMB 2025</p>
+            </div>
           </div>
+
+        </div>
+
+        {/* Location Button - Mobile Optimized */}
+        <div className="px-2 mt-8 mb-8">
+          <button
+            onClick={handleViewLocation}
+            className="w-full py-4 bg-gradient-to-r from-pink-400 via-rose-400 to-orange-400 text-white rounded-full font-semibold text-base shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 active:scale-95"
+          >
+            <Navigation className="w-5 h-5" />
+            Lihat Lokasi Acara
+          </button>
         </div>
       </div>
 
-      <footer className="bg-gradient-to-r from-ffb-black via-ffb-gray-900 to-ffb-black border-t border-ffb-gold/20 py-6 text-center text-ffb-gray-300">
-        <p className="text-sm md:text-base font-medium">© 2025 UNP Kediri. All rights reserved.</p>
+      {/* Footer - Mobile Optimized */}
+      <footer className="relative bg-gradient-to-r from-pink-100 via-rose-100 to-orange-100 border-t border-pink-200 py-5">
+        <div className="text-center">
+          <p className="text-gray-600 text-sm font-medium">© 2025 ULBI Bandung</p>
+          <p className="text-gray-500 text-xs mt-0.5">All rights reserved.</p>
+        </div>
       </footer>
     </div>
   );

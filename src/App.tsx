@@ -17,14 +17,14 @@ function App() {
   useEffect(() => {
     const path = window.location.pathname;
     
-    // Check for new format: /i/:id/:name
-    const inviteMatch = path.match(/^\/i\/(\d+)\/([^/]+)$/);
+    // Check for new format: /i/:id/:slug
+    const inviteMatch = path.match(/^\/i\/([^/]+)\/([^/]+)$/);
     if (inviteMatch) {
       const wisudawanId = inviteMatch[1];
-      const tamu = inviteMatch[2].replace(/-/g, ' '); // Convert dash back to space
+      const tamuSlug = inviteMatch[2]; // Keep as slug (with dashes)
       
-      setWisudawanName(wisudawanId); // Pass ID instead of name
-      setGuestName(tamu);
+      setWisudawanName(wisudawanId); // Pass ID
+      setGuestName(tamuSlug); // Pass slug for validation
       setCurrentPage('invite');
       return;
     }
